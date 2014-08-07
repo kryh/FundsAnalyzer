@@ -139,6 +139,7 @@ if __name__ == "__main__":
 	plt.grid(True)
 	plt.title('ING')
 	plt.xlabel('dni')
+	plt.ylabel('zysk %')
 
 
 # ==== ING Part ====
