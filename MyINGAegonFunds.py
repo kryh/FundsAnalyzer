@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 import pandas as pd
+import datetime
 
 import BiznesRadarData
 
@@ -10,8 +11,11 @@ from optparse import OptionParser
 
 
 def normalizeTable(table):
-	x = [t/table[0] for t in table]
-	return x
+	#x = [t/table[0] for t in table]
+	localTab = []
+	for entrie in table:
+		localTab.append([entrie[0], entrie[1]/table[0][1]])
+	return localTab
 
 
 def totalReturn(table):
@@ -43,6 +47,29 @@ def readLastNValuesFromBiznesRadarFile(filename, numberOfLastDays):
 		values = [float(line.strip().split(' ')[1]) for line in lines][-numberOfLastDays:]
 		values = normalizeTable(values)
 		return values
+
+
+def readLastNValuesFromBiznesRadarFileDates(filename, numberOfLastDays):
+	with open(filename, 'r') as f:
+		lines = f.readlines()
+		lines.reverse()
+
+		entries = []
+
+		for line in lines:
+			year = int(line.strip().split(" ")[0].split('.')[::-1][0])
+			month = int(line.strip().split(" ")[0].split('.')[::-1][1])
+			day = int(line.strip().split(" ")[0].split('.')[::-1][2])
+
+			value = float(line.strip().split(' ')[1])
+
+			entries.append( [datetime.datetime(year, month, day), value] )
+		
+		entries = entries[-numberOfLastDays:]
+		entries = normalizeTable(entries)
+
+		return entries
+
 
 
 def DownsideDeviation(values):
@@ -86,16 +113,17 @@ if __name__ == "__main__":
 	plt.subplot(2,1,1)
 
 	for f in INGFunds:
-		values = readLastNValuesFromBiznesRadarFile(folder+f, numberOfDays)
-		totalRet = totalReturn(values)
-		dailyRet = dailyReturn(values)
+		#values = readLastNValuesFromBiznesRadarFile(folder+f, numberOfDays)
+		values = np.array(readLastNValuesFromBiznesRadarFileDates(folder+f, numberOfDays))
+		totalRet = totalReturn(values[:,1])
+		dailyRet = dailyReturn(values[:,1])
 		stdDevDailyRet = dailyRet.std()
 		meanDailyRet = dailyRet.mean()
 		sharpeRatio = np.sqrt(len(values))*meanDailyRet/stdDevDailyRet
 		sortinoRatio = np.sqrt(len(values))*meanDailyRet/DownsideDeviation(dailyRet)
 
 		if sortinoRatio > 3 and totalRet > 0.03:
-			FundIndicators.append((f, totalRet, stdDevDailyRet, meanDailyRet, sharpeRatio, sortinoRatio, values))
+			FundIndicators.append((f, totalRet, stdDevDailyRet, meanDailyRet, sharpeRatio, sortinoRatio, values[:,0], values[:,1]))
 
 
 	print "\n"
@@ -105,7 +133,7 @@ if __name__ == "__main__":
 	FundIndicators.reverse()
 	for f in FundIndicators[0:8]:
 		print "{0:<10}\ttotalRet {1:.5}, stdDevDailyRet {2:.5}, meanDailyRet {3:.5}, sharpeRatio {4:.5}, sortinoRatio {5:.5}".format(f[0], f[1], f[2], f[3], f[4], f[5])
-		plt.plot(f[6], label="{fundName},  Return: {totalRet:.2%}, sortino: {sortino:.4}".format(fundName=f[0], totalRet=f[1], sortino=f[5]))
+		plt.plot(f[6], f[7], label="{fundName},  Return: {totalRet:.2%}, sortino: {sortino:.4}".format(fundName=f[0], totalRet=f[1], sortino=f[5]))
 
 	plt.legend(loc='best')
 	plt.grid(True)
@@ -123,16 +151,16 @@ if __name__ == "__main__":
 	plt.subplot(2,1,2)
 
 	for f in AegonFunds:
-		values = readLastNValuesFromBiznesRadarFile(folder+f, numberOfDays)
-		totalRet = totalReturn(values)
-		dailyRet = dailyReturn(values)
+		values = np.array(readLastNValuesFromBiznesRadarFileDates(folder+f, numberOfDays))
+		totalRet = totalReturn(values[:,1])
+		dailyRet = dailyReturn(values[:,1])
 		stdDevDailyRet = dailyRet.std()
 		meanDailyRet = dailyRet.mean()
 		sharpeRatio = np.sqrt(len(values))*meanDailyRet/stdDevDailyRet
 		sortinoRatio = np.sqrt(len(values))*meanDailyRet/DownsideDeviation(dailyRet)
 
 		if sortinoRatio > 3 and totalRet > 0.03:
-			FundIndicators.append((f, totalRet, stdDevDailyRet, meanDailyRet, sharpeRatio, sortinoRatio, values))
+			FundIndicators.append((f, totalRet, stdDevDailyRet, meanDailyRet, sharpeRatio, sortinoRatio, values[:,0], values[:,1]))
 
 
 	print "\n"
@@ -142,7 +170,7 @@ if __name__ == "__main__":
 	FundIndicators.reverse()
 	for f in FundIndicators[0:8]:
 		print "{0:<10}\ttotalRet {1:.5}, stdDevDailyRet {2:.5}, meanDailyRet {3:.5}, sharpeRatio {4:.5}, sortinoRatio {5:.5}".format(f[0], f[1], f[2], f[3], f[4], f[5])
-		plt.plot(f[6], label="{fundName},  Return: {totalRet:.2%}, sortino: {sortino:.4}".format(fundName=f[0], totalRet=f[1], sortino=f[5]))
+		plt.plot(f[6], f[7], label="{fundName},  Return: {totalRet:.2%}, sortino: {sortino:.4}".format(fundName=f[0], totalRet=f[1], sortino=f[5]))
 
 # ==== Aegon Part ====
 
