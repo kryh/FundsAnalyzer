@@ -62,7 +62,6 @@ def downloadFundData(fund):
 					for i in xrange(0, len(start_tagi), 2):
 						dateFromNet = tabela[start_tagi[i]:end_tagi[i]]
 						valueFromNet = tabela[start_tagi[i+1]:end_tagi[i+1]]
-						print dateFromNet, lastDateFromFile
 
 						if PAGE_NR == 1 and i == 0 and (dateFromNet == lastDateFromFile):
 							#data is up to date, no download needed, cleanup
@@ -75,8 +74,10 @@ def downloadFundData(fund):
 						if dateFromNet != lastDateFromFile:	#newer values downloaded
 
 							tmpFundFile.write(dateFromNet + " " + valueFromNet + "\n")
+							print dateFromNet, lastDateFromFile
+
 						else: #got to the existing values in file
-							#write old file content to tmp fole
+							#write old file content to tmp file
 							tmpFundFile.write(newestValueInFile)
 							tmpFundFile.writelines(myFile.readlines())
 
