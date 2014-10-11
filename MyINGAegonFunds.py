@@ -87,7 +87,7 @@ if __name__ == "__main__":
 		"UNIPIE.TFI", "INVPLO.TFI", "PZUGOT.TFI", "AVIDEP.TFI", "INGGOT.TFI", "INGDEL.TFI", "AVIOBD.TFI", "INGGDK.TFI", "PZUPDP.TFI", "AVIDPK.TFI", 
 		"UNIOBL.TFI", "INGOBL.TFI", "UNIONE.TFI", "INVOBA.TFI", "INVZEM.TFI", "PZUSWM.TFI", "UNISTW.TFI", "INGSWZ.TFI", "AVISTI.TFI", "INVZRO.TFI", 
 		"PZUZRO.TFI", "INGZRO.TFI", "UNIZRO.TFI", "AVIZRO.TFI", "INVZRW.TFI", "INVIII.TFI", "INGESD.TFI", "INVAKC.TFI", "PZUEME.TFI", "INVMSP.TFI", 
-		"INGGLM.TFI", "AVIAKA.TFI", "INGSEL.TFI", "INGGSD.TFI", "INGRWS.TFI", "INGSDY.TFI", "UNIAKC.TFI", "INGAKC.TFI"
+		"INGGLM.TFI", "AVIAKA.TFI", "INGSEL.TFI", "INGGSD.TFI", "INGRWS.TFI", "INGSDY.TFI", "UNIAKC.TFI", "INGAKC.TFI", "AMPPIA.TFI"
 		]
 
 	AegonFunds = [
@@ -110,7 +110,7 @@ if __name__ == "__main__":
 
 # ==== ING Part ====
 
-	plt.subplot(2,1,1)
+	plt.subplot(1,2,1)
 
 	for f in INGFunds:
 		#values = readLastNValuesFromBiznesRadarFile(folder+f, numberOfDays)
@@ -152,7 +152,7 @@ if __name__ == "__main__":
 
 	FundIndicators = []
 
-	plt.subplot(2,1,2)
+	plt.subplot(1,2,2)
 
 	for f in AegonFunds:
 		values = np.array(readLastNValuesFromBiznesRadarFileDates(folder+f, numberOfDays))
