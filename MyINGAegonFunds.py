@@ -87,21 +87,22 @@ if __name__ == "__main__":
 		"UNIPIE.TFI", "INVPLO.TFI", "PZUGOT.TFI", "AVIDEP.TFI", "INGGOT.TFI", "INGDEL.TFI", "AVIOBD.TFI", "INGGDK.TFI", "PZUPDP.TFI", "AVIDPK.TFI", 
 		"UNIOBL.TFI", "INGOBL.TFI", "UNIONE.TFI", "INVOBA.TFI", "INVZEM.TFI", "PZUSWM.TFI", "UNISTW.TFI", "INGSWZ.TFI", "AVISTI.TFI", "INVZRO.TFI", 
 		"PZUZRO.TFI", "INGZRO.TFI", "UNIZRO.TFI", "AVIZRO.TFI", "INVZRW.TFI", "INVIII.TFI", "INGESD.TFI", "INVAKC.TFI", "PZUEME.TFI", "INVMSP.TFI", 
-		"INGGLM.TFI", "AVIAKA.TFI", "INGSEL.TFI", "INGGSD.TFI", "INGRWS.TFI", "INGSDY.TFI", "UNIAKC.TFI", "INGAKC.TFI", "AMPPIA.TFI"
+		"INGGLM.TFI", "AVIAKA.TFI", "INGSEL.TFI", "INGGSD.TFI", "INGRWS.TFI", "INGSDY.TFI", "UNIAKC.TFI", "INGAKC.TFI", "AMPPIA.TFI", "AMPZAP.TFI",
+		"AMPAAP.TFI", "INVIIC.TFI", "INGJAP.TFI"
 		]
 
-	AegonFunds = [
-		"ALLSEL.TFI", "ALLPIE.TFI", "BPHOB1.TFI", "AVIOBL.TFI", "AVIAKP.TFI", "AVISTI.TFI", "AVIZRO.TFI", "INVBRI.TFI", "INVAKC.TFI", "INVMSP.TFI", "INVZRO.TFI", 
-		"INGZRO.TFI", "LEGAKC.TFI", "LEGSSP.TFI", "LEGSTR.TFI", "NOBAKC.TFI", "NOBAMS.TFI", "NOBMIE.TFI", "PKOPLU.TFI", "PKOPDP.TFI", "PKOSKA.TFI", "PZUAMS.TFI", 
-		"PZUZRO.TFI", "SKAAKC.TFI", "SKAMSS.TFI", "SKATFS.TFI", "UNIAKC.TFI", "UNIPIE.TFI", "UNIZRO.TFI", "UNISTW.TFI", "AVINTE.TFI", "AVINSP.TFI", "QUEAGR.TFI", 
-		"QUESEL.TFI", "QUEOKA.TFI", "NOBTIM.TFI", "PZUBIN.TFI", "INVGOO.TFI", "INVIIC.TFI", "INVAML.TFI", "NOBGLR.TFI", "NOBSWP.TFI", "INGGSD.TFI", "PZUEME.TFI",
-		"NOBAFR.TFI", "ARKOBL.TFI", "PKODLG.TFI", "UNITTD.TFI", "AVIDPK.TFI"
- 		]
+	# AegonFunds = [
+	# 	"ALLSEL.TFI", "ALLPIE.TFI", "BPHOB1.TFI", "AVIOBL.TFI", "AVIAKP.TFI", "AVISTI.TFI", "AVIZRO.TFI", "INVBRI.TFI", "INVAKC.TFI", "INVMSP.TFI", "INVZRO.TFI", 
+	# 	"INGZRO.TFI", "LEGAKC.TFI", "LEGSSP.TFI", "LEGSTR.TFI", "NOBAKC.TFI", "NOBAMS.TFI", "NOBMIE.TFI", "PKOPLU.TFI", "PKOPDP.TFI", "PKOSKA.TFI", "PZUAMS.TFI", 
+	# 	"PZUZRO.TFI", "SKAAKC.TFI", "SKAMSS.TFI", "SKATFS.TFI", "UNIAKC.TFI", "UNIPIE.TFI", "UNIZRO.TFI", "UNISTW.TFI", "AVINTE.TFI", "AVINSP.TFI", "QUEAGR.TFI", 
+	# 	"QUESEL.TFI", "QUEOKA.TFI", "NOBTIM.TFI", "PZUBIN.TFI", "INVGOO.TFI", "INVIIC.TFI", "INVAML.TFI", "NOBGLR.TFI", "NOBSWP.TFI", "INGGSD.TFI", "PZUEME.TFI",
+	# 	"NOBAFR.TFI", "ARKOBL.TFI", "PKODLG.TFI", "UNITTD.TFI", "AVIDPK.TFI"
+ # 		]
 
 	folder = "BiznesRadar/"
 
 	if options.Download:
-		BiznesRadarData.Download(INGFunds + AegonFunds)
+		BiznesRadarData.Download(INGFunds)
 
 
 	FundIndicators = []
@@ -110,7 +111,7 @@ if __name__ == "__main__":
 
 # ==== ING Part ====
 
-	plt.subplot(1,2,1)
+	# plt.subplot(1,2,1)
 
 	for f in INGFunds:
 		#values = readLastNValuesFromBiznesRadarFile(folder+f, numberOfDays)
@@ -148,38 +149,38 @@ if __name__ == "__main__":
 # ==== ING Part ====
 
 
-# ==== Aegon Part ====
+# # ==== Aegon Part ====
 
-	FundIndicators = []
+# 	FundIndicators = []
 
-	plt.subplot(1,2,2)
+# 	plt.subplot(1,2,2)
 
-	for f in AegonFunds:
-		values = np.array(readLastNValuesFromBiznesRadarFileDates(folder+f, numberOfDays))
-		totalRet = totalReturn(values[:,1])
-		dailyRet = dailyReturn(values[:,1])
-		stdDevDailyRet = dailyRet.std()
-		meanDailyRet = dailyRet.mean()
-		sharpeRatio = np.sqrt(len(values))*meanDailyRet/stdDevDailyRet
-		sortinoRatio = np.sqrt(len(values))*meanDailyRet/DownsideDeviation(dailyRet)
+# 	for f in AegonFunds:
+# 		values = np.array(readLastNValuesFromBiznesRadarFileDates(folder+f, numberOfDays))
+# 		totalRet = totalReturn(values[:,1])
+# 		dailyRet = dailyReturn(values[:,1])
+# 		stdDevDailyRet = dailyRet.std()
+# 		meanDailyRet = dailyRet.mean()
+# 		sharpeRatio = np.sqrt(len(values))*meanDailyRet/stdDevDailyRet
+# 		sortinoRatio = np.sqrt(len(values))*meanDailyRet/DownsideDeviation(dailyRet)
 
-		if sortinoRatio > 3 and totalRet > 0.03:
-			FundIndicators.append((f, totalRet, stdDevDailyRet, meanDailyRet, sharpeRatio, sortinoRatio, values[:,0], values[:,1]))
+# 		if sortinoRatio > 3 and totalRet > 0.03:
+# 			FundIndicators.append((f, totalRet, stdDevDailyRet, meanDailyRet, sharpeRatio, sortinoRatio, values[:,0], values[:,1]))
 
 
-	print "\n"
+# 	print "\n"
 
 	
-	FundIndicators = sorted(FundIndicators, key=lambda x: (x[5], x[4])) 
-	FundIndicators.reverse()
-	for f in FundIndicators[0:8]:
-		trend3 = "+" if f[7][-4]<f[7][-3] else "-"  
-		trend2 = "+" if f[7][-3]<f[7][-2] else "-"
-		trend1 = "+" if f[7][-2]<f[7][-1] else "-"
-		print "{0:<10}\ttotalRet {1:.5}, stdDevDailyRet {2:.5}, meanDailyRet {3:.5}, sharpeRatio {4:.5}, sortinoRatio {5:.5}".format(f[0], f[1], f[2], f[3], f[4], f[5])
-		plt.plot(f[6], f[7], label="{fundName},  Return: {totalRet:.2%}, sortino: {sortino:.4}, {trend3}{trend2}{trend1}".format(fundName=f[0], totalRet=f[1], sortino=f[5], trend3=trend3, trend2=trend2, trend1=trend1))
+# 	FundIndicators = sorted(FundIndicators, key=lambda x: (x[5], x[4])) 
+# 	FundIndicators.reverse()
+# 	for f in FundIndicators[0:8]:
+# 		trend3 = "+" if f[7][-4]<f[7][-3] else "-"  
+# 		trend2 = "+" if f[7][-3]<f[7][-2] else "-"
+# 		trend1 = "+" if f[7][-2]<f[7][-1] else "-"
+# 		print "{0:<10}\ttotalRet {1:.5}, stdDevDailyRet {2:.5}, meanDailyRet {3:.5}, sharpeRatio {4:.5}, sortinoRatio {5:.5}".format(f[0], f[1], f[2], f[3], f[4], f[5])
+# 		plt.plot(f[6], f[7], label="{fundName},  Return: {totalRet:.2%}, sortino: {sortino:.4}, {trend3}{trend2}{trend1}".format(fundName=f[0], totalRet=f[1], sortino=f[5], trend3=trend3, trend2=trend2, trend1=trend1))
 
-# ==== Aegon Part ====
+# # ==== Aegon Part ====
 
 
 

@@ -19,6 +19,7 @@ def getWebPage(fund, pageNumber):
 	return table
 
 def downloadFundData(fund):
+	print("downloadFundData, ", fund)
 	if not os.path.exists(folder+fund):
 		with open(folder+fund, "w") as myFile:
 			for PAGE_NR in xrange(1,16):  
@@ -97,9 +98,9 @@ def downloadFundData(fund):
 			#rename tmp file to fund file
 
 def Download(listOfFunds):
-  
  for fund in listOfFunds:
  	downloadFundData(fund)
+
  		
 
 
