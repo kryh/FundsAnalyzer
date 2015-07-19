@@ -1,4 +1,4 @@
-import urllib2
+import urllib3
 import re
 import os
 import tempfile
@@ -10,9 +10,13 @@ folder = "BiznesRadar/"
 
 def getWebPage(fund, pageNumber):
 	url = "http://www.biznesradar.pl/notowania-historyczne/" + fund + "," + str(pageNumber)
-	response = urllib2.urlopen(url)
-	html = response.read()
+	http = urllib3.PoolManager()
+	response = http.request('GET', url)
+	#response = urllib3.urlopen(url)
+	html = response.data
 
+	html = str(html)
+	
 	position_start = html.find("<table")
 	position_end = html.find("</table")
 	table = html[position_start:position_end]
@@ -22,7 +26,7 @@ def downloadFundData(fund):
 	print("downloadFundData, ", fund)
 	if not os.path.exists(folder+fund):
 		with open(folder+fund, "w") as myFile:
-			for PAGE_NR in xrange(1,16):  
+			for PAGE_NR in range(1,16):  
 
 				tabela = getWebPage(fund, PAGE_NR)
 				
@@ -34,10 +38,10 @@ def downloadFundData(fund):
 				
 				assert len(start_tagi) == len(end_tagi), "Cos nie tak z parsowaniem tablicy, tagi START i STOP sie nie zgadzaja"
 				
-				for i in xrange(0, len(start_tagi), 2):
+				for i in range(0, len(start_tagi), 2):
 					myFile.write(tabela[start_tagi[i]:end_tagi[i]] + " " + tabela[start_tagi[i+1]:end_tagi[i+1]] + "\n")
 				  
-				print "Finished:", fund, PAGE_NR
+				print ("Finished:", fund, PAGE_NR)
 
 	else:	# file exists, whole download unnecessary, only update
 		# read first line to know how much needs to be downloaded
@@ -48,7 +52,7 @@ def downloadFundData(fund):
 
 			with tempfile.NamedTemporaryFile(mode='w', delete=False) as tmpFundFile:				
 
-				for PAGE_NR in xrange(1,16):  
+				for PAGE_NR in range(1,16):  
 
 					tabela = getWebPage(fund, PAGE_NR)
 					
@@ -60,7 +64,7 @@ def downloadFundData(fund):
 					
 					assert len(start_tagi) == len(end_tagi), "Cos nie tak z parsowaniem tablicy, tagi START i STOP sie nie zgadzaja"
 		
-					for i in xrange(0, len(start_tagi), 2):
+					for i in range(0, len(start_tagi), 2):
 						dateFromNet = tabela[start_tagi[i]:end_tagi[i]]
 						valueFromNet = tabela[start_tagi[i+1]:end_tagi[i+1]]
 
@@ -69,13 +73,13 @@ def downloadFundData(fund):
 							tmpFundFile.close()
 							myFile.close()
 							os.unlink(tmpFundFile.name)
-							print "Data for '{}' is up to date".format(fund)
+							print("Data for '{}' is up to date".format(fund))
 							return
 
 						if dateFromNet != lastDateFromFile:	#newer values downloaded
 
 							tmpFundFile.write(dateFromNet + " " + valueFromNet + "\n")
-							print dateFromNet, lastDateFromFile
+							print(dateFromNet, lastDateFromFile)
 
 						else: #got to the existing values in file
 							#write old file content to tmp file
@@ -87,7 +91,7 @@ def downloadFundData(fund):
 
 							shutil.move(tmpFundFile.name, myFile.name)
 
-							print "Finished updating:", fund, PAGE_NR
+							print("Finished updating:", fund, PAGE_NR)
 							return
 
 
@@ -151,7 +155,7 @@ def Download():
   for fund in funds:
     
     with open(folder+fund, "w") as myFile:
-      for PAGE_NR in xrange(1,16):
+      for PAGE_NR in range(1,16):
 	  
 	url = "http://www.biznesradar.pl/notowania-historyczne/" + fund + "," + str(PAGE_NR)
 	response = urllib2.urlopen(url)
@@ -172,7 +176,7 @@ def Download():
 	
 	assert len(start_tagi) == len(end_tagi), "Cos nie tak z parsowaniem tablicy, tagi START i STOP sie nie zgadzaja"
 	
-	for i in xrange(0, len(start_tagi), 2):
+	for i in range(0, len(start_tagi), 2):
 	  myFile.write(tabela[start_tagi[i]:end_tagi[i]] + " " + tabela[start_tagi[i+1]:end_tagi[i+1]] + "\n")
 	  
 	print "Finished:", fund, PAGE_NR

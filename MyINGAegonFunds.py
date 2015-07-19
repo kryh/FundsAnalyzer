@@ -127,7 +127,7 @@ if __name__ == "__main__":
 			FundIndicators.append((f, totalRet, stdDevDailyRet, meanDailyRet, sharpeRatio, sortinoRatio, values[:,0], values[:,1]))
 
 
-	print "\n"
+	print("\n")
 
 	
 	FundIndicators = sorted(FundIndicators, key=lambda x: (x[5], x[4])) 
@@ -136,7 +136,7 @@ if __name__ == "__main__":
 		trend3 = "+" if f[7][-4]<f[7][-3] else "-"  
 		trend2 = "+" if f[7][-3]<f[7][-2] else "-"
 		trend1 = "+" if f[7][-2]<f[7][-1] else "-"
-		print "{0:<10}\ttotalRet {1:.5}, stdDevDailyRet {2:.5}, meanDailyRet {3:.5}, sharpeRatio {4:.5}, sortinoRatio {5:.5}".format(f[0], f[1], f[2], f[3], f[4], f[5])
+		print("{0:<10}\ttotalRet {1:.5}, stdDevDailyRet {2:.5}, meanDailyRet {3:.5}, sharpeRatio {4:.5}, sortinoRatio {5:.5}".format(f[0], f[1], f[2], f[3], f[4], f[5]))
 		plt.plot(f[6], f[7], label="{fundName},  Return: {totalRet:.2%}, sortino: {sortino:.4}, {trend3}{trend2}{trend1}".format(fundName=f[0], totalRet=f[1], sortino=f[5], trend3=trend3, trend2=trend2, trend1=trend1))
 
 	plt.legend(loc='best')
