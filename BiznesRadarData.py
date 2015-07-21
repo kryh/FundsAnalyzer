@@ -3,17 +3,20 @@ import re
 import os
 import tempfile
 import shutil
+import asyncio
+import aiohttp
+
 
 #url = "http://www.biznesradar.pl/notowania-historyczne/" + FUND_NAME + "," + PAGE_NR
 
 folder = "BiznesRadar/"
 
+@asyncio.coroutine
 def getWebPage(fund, pageNumber):
+	print("Downloading {}, page {}".format(fund, pageNumber))
 	url = "http://www.biznesradar.pl/notowania-historyczne/" + fund + "," + str(pageNumber)
-	http = urllib3.PoolManager()
-	response = http.request('GET', url)
-	#response = urllib3.urlopen(url)
-	html = response.data
+	response = yield from aiohttp.request('GET', url)
+	html = yield from response.read()
 
 	html = str(html)
 	
@@ -22,24 +25,28 @@ def getWebPage(fund, pageNumber):
 	table = html[position_start:position_end]
 	return table
 
+@asyncio.coroutine
 def downloadFundData(fund):
-	print("downloadFundData, ", fund)
+	#print("downloadFundData, ", fund)
 	if not os.path.exists(folder+fund):
 		with open(folder+fund, "w") as myFile:
+			coros = [getWebPage(fund, page) for page in range(1, 16)]
+			tabela = yield from asyncio.gather(*coros)
+
 			for PAGE_NR in range(1,16):  
 
-				tabela = getWebPage(fund, PAGE_NR)
+				#tabela = yield from getWebPage(fund, PAGE_NR)
 				
 				START_TAG = "<td>"
-				start_tagi = [m.start()+len(START_TAG) for m in re.finditer(START_TAG, tabela)]
+				start_tagi = [m.start()+len(START_TAG) for m in re.finditer(START_TAG, tabela[PAGE_NR-1])]
 				
 				END_TAG = "</td>"
-				end_tagi = [m.start() for m in re.finditer(END_TAG, tabela)]
+				end_tagi = [m.start() for m in re.finditer(END_TAG, tabela[PAGE_NR-1])]
 				
 				assert len(start_tagi) == len(end_tagi), "Cos nie tak z parsowaniem tablicy, tagi START i STOP sie nie zgadzaja"
 				
 				for i in range(0, len(start_tagi), 2):
-					myFile.write(tabela[start_tagi[i]:end_tagi[i]] + " " + tabela[start_tagi[i+1]:end_tagi[i+1]] + "\n")
+					myFile.write(tabela[PAGE_NR-1][start_tagi[i]:end_tagi[i]] + " " + tabela[PAGE_NR-1][start_tagi[i+1]:end_tagi[i+1]] + "\n")
 				  
 				print ("Finished:", fund, PAGE_NR)
 
@@ -54,7 +61,7 @@ def downloadFundData(fund):
 
 				for PAGE_NR in range(1,16):  
 
-					tabela = getWebPage(fund, PAGE_NR)
+					tabela = yield from getWebPage(fund, PAGE_NR)
 					
 					START_TAG = "<td>"
 					start_tagi = [m.start()+len(START_TAG) for m in re.finditer(START_TAG, tabela)]
@@ -101,12 +108,20 @@ def downloadFundData(fund):
 			#remove fund file
 			#rename tmp file to fund file
 
+@asyncio.coroutine
+def whenReady(listOfFunds):
+	coros = [downloadFundData(fund) for fund in listOfFunds]
+	results = yield from asyncio.gather(*coros)
+
 def Download(listOfFunds):
- for fund in listOfFunds:
- 	downloadFundData(fund)
-
+#	loop = asyncio.get_event_loop()
+#	f = asyncio.wait([downloadFundData(fund) for fund in listOfFunds])
+#	loop.run_until_complete(f)
+#	loop.close()
  		
-
+	loop = asyncio.get_event_loop()
+	loop.run_until_complete(whenReady(listOfFunds))
+	loop.close()
 
 
 
