@@ -5,7 +5,7 @@ import tempfile
 import shutil
 import asyncio
 import aiohttp
-
+import aiofiles
 
 #url = "http://www.biznesradar.pl/notowania-historyczne/" + FUND_NAME + "," + PAGE_NR
 
@@ -30,7 +30,9 @@ def getWebPage(fund, pageNumber):
 def downloadFundData(fund):
 	#print("downloadFundData, ", fund)
 	if not os.path.exists(folder+fund):
-		with open(folder+fund, "w") as myFile:
+
+		myFile = yield from aiofiles.open(folder+fund, "w")
+		try:
 			coros = [getWebPage(fund, page) for page in range(1, 16)]
 			tabela = yield from asyncio.gather(*coros)
 
@@ -45,9 +47,12 @@ def downloadFundData(fund):
 				assert len(start_tagi) == len(end_tagi), "Cos nie tak z parsowaniem tablicy, tagi START i STOP sie nie zgadzaja"
 				
 				for i in range(0, len(start_tagi), 2):
-					myFile.write(tabela[PAGE_NR-1][start_tagi[i]:end_tagi[i]] + " " + tabela[PAGE_NR-1][start_tagi[i+1]:end_tagi[i+1]] + "\n")
+					yield from myFile.write(tabela[PAGE_NR-1][start_tagi[i]:end_tagi[i]] + " " + tabela[PAGE_NR-1][start_tagi[i+1]:end_tagi[i+1]] + "\n")
 				  
 				print ("Finished:", fund, PAGE_NR)
+		finally:
+			yield from myFile.close()
+
 
 	else:	# file exists, whole download unnecessary, only update
 		# read first line to know how much needs to be downloaded
