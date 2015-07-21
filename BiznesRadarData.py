@@ -15,6 +15,7 @@ folder = "BiznesRadar/"
 def getWebPage(fund, pageNumber):
 	print("Downloading {}, page {}".format(fund, pageNumber))
 	url = "http://www.biznesradar.pl/notowania-historyczne/" + fund + "," + str(pageNumber)
+	
 	response = yield from aiohttp.request('GET', url)
 	html = yield from response.read()
 
@@ -34,8 +35,6 @@ def downloadFundData(fund):
 			tabela = yield from asyncio.gather(*coros)
 
 			for PAGE_NR in range(1,16):  
-
-				#tabela = yield from getWebPage(fund, PAGE_NR)
 				
 				START_TAG = "<td>"
 				start_tagi = [m.start()+len(START_TAG) for m in re.finditer(START_TAG, tabela[PAGE_NR-1])]
@@ -113,12 +112,8 @@ def whenReady(listOfFunds):
 	coros = [downloadFundData(fund) for fund in listOfFunds]
 	results = yield from asyncio.gather(*coros)
 
-def Download(listOfFunds):
-#	loop = asyncio.get_event_loop()
-#	f = asyncio.wait([downloadFundData(fund) for fund in listOfFunds])
-#	loop.run_until_complete(f)
-#	loop.close()
- 		
+
+def Download(listOfFunds):		
 	loop = asyncio.get_event_loop()
 	loop.run_until_complete(whenReady(listOfFunds))
 	loop.close()
