@@ -18,7 +18,6 @@ def getWebPage(fund, pageNumber):
 	
 	response = yield from aiohttp.request('GET', url)
 	html = yield from response.read()
-
 	html = str(html)
 	
 	position_start = html.find("<table")
@@ -123,79 +122,3 @@ def Download(listOfFunds):
 	loop.run_until_complete(whenReady(listOfFunds))
 	loop.close()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-"""
-
-
-import urllib2
-import re
-
-#url = "http://www.biznesradar.pl/notowania-historyczne/" + FUND_NAME + "," + PAGE_NR
-
-
-def Download():
-  
-  funds = [
-  "UNIPIE.TFI", "INVPLO.TFI", "PZUGOT.TFI", "AVIDEP.TFI", "INGGOT.TFI", "INGDEL.TFI", "AVIOBD.TFI", "INGGDK.TFI", "PZUPDP.TFI", "AVIDPK.TFI", 
-  "UNIOBL.TFI", "INGOBL.TFI", "UNIONE.TFI", "INVOBA.TFI", "INVZEM.TFI", "PZUSWM.TFI", "UNISTW.TFI", "INGSWZ.TFI", "AVISTI.TFI", "INVZRO.TFI", 
-  "PZUZRO.TFI", "INGZRO.TFI", "UNIZRO.TFI", "AVIZRO.TFI", "INVZRW.TFI", "INVIII.TFI", "INGESD.TFI", "INVAKC.TFI", "PZUEME.TFI", "INVMSP.TFI", 
-  "INGGLM.TFI", "AVIAKA.TFI", "INGSEL.TFI", "INGGSD.TFI", "INGRWS.TFI", "INGSDY.TFI", "UNIAKC.TFI", "INGAKC.TFI"
-  ]
-
-  folder = "BiznesRadar/"
-  
-  for fund in funds:
-    
-    with open(folder+fund, "w") as myFile:
-      for PAGE_NR in range(1,16):
-	  
-	url = "http://www.biznesradar.pl/notowania-historyczne/" + fund + "," + str(PAGE_NR)
-	response = urllib2.urlopen(url)
-	html = response.read()
-
-	#print html #entire page content
-	
-	position_start = html.find("<table")
-	position_end = html.find("</table")
-      
-	tabela = html[position_start:position_end]
-	
-	START_TAG = "<td>"
-	start_tagi = [m.start()+len(START_TAG) for m in re.finditer(START_TAG, tabela)]
-	
-	END_TAG = "</td>"
-	end_tagi = [m.start() for m in re.finditer(END_TAG, tabela)]
-	
-	assert len(start_tagi) == len(end_tagi), "Cos nie tak z parsowaniem tablicy, tagi START i STOP sie nie zgadzaja"
-	
-	for i in range(0, len(start_tagi), 2):
-	  myFile.write(tabela[start_tagi[i]:end_tagi[i]] + " " + tabela[start_tagi[i+1]:end_tagi[i+1]] + "\n")
-	  
-	print "Finished:", fund, PAGE_NR
-    
-  
-if __name__ == "__main__":
-  Download()"""
