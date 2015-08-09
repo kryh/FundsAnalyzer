@@ -121,4 +121,3 @@ def Download(listOfFunds):
 	loop = asyncio.get_event_loop()
 	loop.run_until_complete(whenReady(listOfFunds))
 	loop.close()
-
