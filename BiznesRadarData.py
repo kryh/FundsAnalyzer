@@ -60,61 +60,42 @@ def downloadFundData(fund):
 
 	else:	# file exists, whole download unnecessary, only update
 		# read first line to know how much needs to be downloaded
-		with open(folder+fund, "r") as myFile:			
+		with open(folder+fund, "r") as myFile:
 
 			newestValueInFile = myFile.readline()
-			lastDateFromFile, _ = newestValueInFile.split(" ")
+			
+			values = ""
 
-			with tempfile.NamedTemporaryFile(mode='w', delete=False) as tmpFundFile:				
+			for page in range(1,16):
+				webPage = yield from getWebPage(fund, page)
+				values += getValues(webPage)
+				
+				index = values.find(newestValueInFile)
 
-				for PAGE_NR in range(1,16):  
+				if index == 0:
+					print("{} is up to date".format(fund))
+					break
+				elif index == -1:
+					print("{} newest value from file not found on downloaded page, another needs to be downloaded".format(fund))
+					continue
+				else:
+					print("{} needs to be updated".format(fund))
+					newContent = values[:index]
+					myFile.seek(0)
+					oldContentList = myFile.readlines()
 
-					tabela = yield from getWebPage(fund, PAGE_NR)
-					
-					START_TAG = "<td>"
-					start_tagi = [m.start()+len(START_TAG) for m in re.finditer(START_TAG, tabela)]
-					
-					END_TAG = "</td>"
-					end_tagi = [m.start() for m in re.finditer(END_TAG, tabela)]
-					
-					assert len(start_tagi) == len(end_tagi), "Cos nie tak z parsowaniem tablicy, tagi START i STOP sie nie zgadzaja"
-		
-					for i in range(0, len(start_tagi), 2):
-						dateFromNet = tabela[start_tagi[i]:end_tagi[i]]
-						valueFromNet = tabela[start_tagi[i+1]:end_tagi[i+1]]
+					oldContentString = ""
+					for line in oldContentList:
+						oldContentString += line
 
-						if PAGE_NR == 1 and i == 0 and (dateFromNet == lastDateFromFile):
-							#data is up to date, no download needed, cleanup
-							tmpFundFile.close()
-							myFile.close()
-							os.unlink(tmpFundFile.name)
-							print("Data for '{}' is up to date".format(fund))
-							return
+					myFile.close()
+					os.remove(folder+fund)
 
-						if dateFromNet != lastDateFromFile:	#newer values downloaded
+					with open(folder+fund, "w") as myFile:
+						myFile.write(newContent + oldContentString)
 
-							tmpFundFile.write(dateFromNet + " " + valueFromNet + "\n")
-							print(dateFromNet, lastDateFromFile)
+					break
 
-						else: #got to the existing values in file
-							#write old file content to tmp file
-							tmpFundFile.write(newestValueInFile)
-							tmpFundFile.writelines(myFile.readlines())
-
-							tmpFundFile.close()
-							myFile.close()
-
-							shutil.move(tmpFundFile.name, myFile.name)
-
-							print("Finished updating:", fund, PAGE_NR)
-							return
-
-
-			#open tmp file
-			#write values from net to tmp file
-			#write content of fund file to tmp file
-			#remove fund file
-			#rename tmp file to fund file
 
 @asyncio.coroutine
 def whenReady(listOfFunds):
