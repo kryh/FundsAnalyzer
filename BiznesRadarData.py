@@ -9,7 +9,7 @@ import aiofiles
 
 #url = "http://www.biznesradar.pl/notowania-historyczne/" + FUND_NAME + "," + PAGE_NR
 
-folder = "BiznesRadar/"
+folder = "GoBiznesRadar/"
 
 @asyncio.coroutine
 def getWebPage(fund, pageNumber):
@@ -25,9 +25,24 @@ def getWebPage(fund, pageNumber):
 	table = html[position_start:position_end]
 	return table
 
+#multiline string date value
+def getValues(tabela): 
+	START_TAG = "<td>"
+	start_tagi = [m.start()+len(START_TAG) for m in re.finditer(START_TAG, tabela)]
+	
+	END_TAG = "</td>"
+	end_tagi = [m.start() for m in re.finditer(END_TAG, tabela)]
+	
+	assert len(start_tagi) == len(end_tagi), "Cos nie tak z parsowaniem tablicy, tagi START i STOP sie nie zgadzaja"
+	
+	values = ""
+	for i in range(0, len(start_tagi), 2):
+		values += tabela[start_tagi[i]:end_tagi[i]] + " " + tabela[start_tagi[i+1]:end_tagi[i+1]] + "\n"
+
+	return values
+
 @asyncio.coroutine
 def downloadFundData(fund):
-	#print("downloadFundData, ", fund)
 	if not os.path.exists(folder+fund):
 
 		myFile = yield from aiofiles.open(folder+fund, "w")
@@ -36,17 +51,7 @@ def downloadFundData(fund):
 			tabela = yield from asyncio.gather(*coros)
 
 			for PAGE_NR in range(1,16):  
-				
-				START_TAG = "<td>"
-				start_tagi = [m.start()+len(START_TAG) for m in re.finditer(START_TAG, tabela[PAGE_NR-1])]
-				
-				END_TAG = "</td>"
-				end_tagi = [m.start() for m in re.finditer(END_TAG, tabela[PAGE_NR-1])]
-				
-				assert len(start_tagi) == len(end_tagi), "Cos nie tak z parsowaniem tablicy, tagi START i STOP sie nie zgadzaja"
-				
-				for i in range(0, len(start_tagi), 2):
-					yield from myFile.write(tabela[PAGE_NR-1][start_tagi[i]:end_tagi[i]] + " " + tabela[PAGE_NR-1][start_tagi[i+1]:end_tagi[i+1]] + "\n")
+				yield from myFile.write(getValues(tabela[PAGE_NR-1]))
 				  
 				print ("Finished:", fund, PAGE_NR)
 		finally:
