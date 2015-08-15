@@ -7,8 +7,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"runtime"
 	"strings"
-    "runtime"
+	"sync"
 )
 
 var sem = make(chan struct{}, 15)
@@ -23,7 +24,6 @@ type webPage struct {
 }
 
 func downloadWebPage(fund string, pageNum int) string {
-
 	response, err := http.Get(fmt.Sprintf("http://www.biznesradar.pl/notowania-historyczne/%s,%d", fund, pageNum))
 	if err != nil {
 		panic(err)
@@ -57,35 +57,83 @@ func getTable(content string) string {
 	return table
 }
 
+func isWIG(fundname string) bool {
+    return strings.Contains(fundname, "WIG")
+}
+
 func DownloadFundData(fund string, pageNum int) string {
 
 	page := downloadWebPage(fund, pageNum)
 	table := getTable(page)
-
 	data := ""
 
 	//date value
 	for {
-		//parse date
-		start_index := strings.Index(table, "<td>")
+		if isWIG(fund) { //Data Otwarcie Max Min Zamknięcie Obrót
+			//parse date
+			start_index := strings.Index(table, "<td>")
 
-		if start_index == -1 {
-			break
+			if start_index == -1 {
+				break
+			}
+
+			stop_index := strings.Index(table, "</td>")
+			date := table[start_index+len("<td>") : stop_index]
+
+			table = string(table)[stop_index+1:] //+1 in order to jump to next tag
+			//parse value
+
+			start_index = strings.Index(table, "<td>")
+			stop_index = strings.Index(table, "</td>")
+			/*otwarcie*/ _ = table[start_index+len("<td>") : stop_index]
+			table = string(table)[stop_index+1:] //+1 in order to jump to next tag
+
+            start_index = strings.Index(table, "<td>")
+            stop_index = strings.Index(table, "</td>")
+            /*max*/ _ = table[start_index+len("<td>") : stop_index]
+            table = string(table)[stop_index+1:] //+1 in order to jump to next tag
+
+            start_index = strings.Index(table, "<td>")
+            stop_index = strings.Index(table, "</td>")
+            /*min*/ _ = table[start_index+len("<td>") : stop_index]
+            table = string(table)[stop_index+1:] //+1 in order to jump to next tag
+
+            start_index = strings.Index(table, "<td>")
+            stop_index = strings.Index(table, "</td>")
+            zamkniecie := table[start_index+len("<td>") : stop_index]
+            table = string(table)[stop_index+1:] //+1 in order to jump to next tag
+
+            start_index = strings.Index(table, "<td>")
+            stop_index = strings.Index(table, "</td>")
+            /*obrot*/ _ = table[start_index+len("<td>") : stop_index]
+            table = string(table)[stop_index+1:] //+1 in order to jump to next tag
+
+			// fmt.Println(fund, date, value)
+			data += fmt.Sprintf("%s %s\n", date, zamkniecie)
+
+		} else {
+
+			//parse date
+			start_index := strings.Index(table, "<td>")
+
+			if start_index == -1 {
+				break
+			}
+
+			stop_index := strings.Index(table, "</td>")
+			date := table[start_index+len("<td>") : stop_index]
+
+			table = string(table)[stop_index+1:] //+1 in order to jump to next tag
+			//parse value
+
+			start_index = strings.Index(table, "<td>")
+			stop_index = strings.Index(table, "</td>")
+			value := table[start_index+len("<td>") : stop_index]
+			table = string(table)[stop_index+1:] //+1 in order to jump to next tag
+
+			// fmt.Println(fund, date, value)
+			data += fmt.Sprintf("%s %s\n", date, value)
 		}
-
-		stop_index := strings.Index(table, "</td>")
-		date := table[start_index+len("<td>") : stop_index]
-
-		table = string(table)[stop_index+1:] //+1 in order to jump to next tag
-		//parse value
-
-		start_index = strings.Index(table, "<td>")
-		stop_index = strings.Index(table, "</td>")
-		value := table[start_index+len("<td>") : stop_index]
-		table = string(table)[stop_index+1:] //+1 in order to jump to next tag
-
-		// fmt.Println(fund, date, value)
-		data += fmt.Sprintf("%s %s\n", date, value)
 	}
 
 	return data
@@ -93,7 +141,7 @@ func DownloadFundData(fund string, pageNum int) string {
 
 func main() {
 
-    runtime.GOMAXPROCS(runtime.NumCPU())
+	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	foldername := "GoBiznesRadar/"
 
@@ -101,9 +149,10 @@ func main() {
 		"UNIOBL.TFI", "INGOBL.TFI", "UNIONE.TFI", "INVOBA.TFI", "INVZEM.TFI", "PZUSWM.TFI", "UNISTW.TFI", "INGSWZ.TFI", "AVISTI.TFI", "INVZRO.TFI",
 		"PZUZRO.TFI", "INGZRO.TFI", "UNIZRO.TFI", "AVIZRO.TFI", "INVZRW.TFI", "INVIII.TFI", "INGESD.TFI", "INVAKC.TFI", "PZUEME.TFI", "INVMSP.TFI",
 		"INGGLM.TFI", "AVIAKA.TFI", "INGSEL.TFI", "INGGSD.TFI", "INGRWS.TFI", "INGSDY.TFI", "UNIAKC.TFI", "INGAKC.TFI", "AMPPIA.TFI", "AMPZAP.TFI",
-		"AMPAAP.TFI", "INVIIC.TFI", "INGJAP.TFI"}
+		"AMPAAP.TFI", "INVIIC.TFI", "INGJAP.TFI", "WIG20", "WIG30", "mWIG40"}
 
-	ch := make(chan struct{})
+	var wg sync.WaitGroup
+	wg.Add(len(funds))
 
 	for _, fund := range funds {
 
@@ -119,7 +168,7 @@ func main() {
 				defer f.Close()
 
 				fundData := ""
-				for i := 1; i <= 16; i++ {
+				for i := 1; i <= 10; i++ {
 					fundData += DownloadFundData(fund, i)
 				}
 
@@ -155,7 +204,7 @@ func main() {
 								break
 							} else {
 								missingPart := fundData[:index]
-                                log.Printf("Downloading missing part:\n%s", missingPart)
+								log.Printf("%s writing missing part: %s", fund, missingPart)
 
 								oldContent, err := ioutil.ReadFile(foldername + fund)
 								if err != nil {
@@ -180,16 +229,13 @@ func main() {
 				}
 			}
 
-			ch <- struct{}{}
 			<-sem
+			wg.Done()
 
 		}(fund)
 	}
 
-	for i := 0; i < len(funds); i++ {
-		<-ch
-	}
-	close(ch)
+	wg.Wait()
 
 	fmt.Println("Done")
 }

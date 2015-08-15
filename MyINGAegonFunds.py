@@ -71,7 +71,7 @@ if __name__ == "__main__":
 		"UNIOBL.TFI", "INGOBL.TFI", "UNIONE.TFI", "INVOBA.TFI", "INVZEM.TFI", "PZUSWM.TFI", "UNISTW.TFI", "INGSWZ.TFI", "AVISTI.TFI", "INVZRO.TFI", 
 		"PZUZRO.TFI", "INGZRO.TFI", "UNIZRO.TFI", "AVIZRO.TFI", "INVZRW.TFI", "INVIII.TFI", "INGESD.TFI", "INVAKC.TFI", "PZUEME.TFI", "INVMSP.TFI", 
 		"INGGLM.TFI", "AVIAKA.TFI", "INGSEL.TFI", "INGGSD.TFI", "INGRWS.TFI", "INGSDY.TFI", "UNIAKC.TFI", "INGAKC.TFI", "AMPPIA.TFI", "AMPZAP.TFI",
-		"AMPAAP.TFI", "INVIIC.TFI", "INGJAP.TFI"
+		"AMPAAP.TFI", "INVIIC.TFI", "INGJAP.TFI", "WIG20", "WIG30", "mWIG40"
 		]
 
 
@@ -82,12 +82,15 @@ if __name__ == "__main__":
 
 
 	FundIndicators = []
+	ScatterIndicators = []
 
 	numberOfDays = 300
 
 # ==== ING Part ====
 
 	# plt.subplot(1,2,1)
+
+	fundData = {}
 
 	for f in INGFunds:
 		values = np.array(readLastNValuesFromBiznesRadarFileDates(folder+f, numberOfDays))
@@ -98,7 +101,7 @@ if __name__ == "__main__":
 		sharpeRatio = np.sqrt(len(values))*meanDailyRet/stdDevDailyRet
 		sortinoRatio = np.sqrt(len(values))*meanDailyRet/DownsideDeviation(dailyRet)
 
-		if sortinoRatio > 2.5 and totalRet > 0.03:
+		if (sortinoRatio > 3.0 and totalRet > 0.03) or (f == "WIG20") or (f == "WIG30") or (f == "mWIG40"):
 			FundIndicators.append((f, totalRet, stdDevDailyRet, meanDailyRet, sharpeRatio, sortinoRatio, values[:,0], values[:,1]))
 
 
@@ -112,7 +115,7 @@ if __name__ == "__main__":
 		trend2 = "+" if f[7][-3]<f[7][-2] else "-"
 		trend1 = "+" if f[7][-2]<f[7][-1] else "-"
 		print("{0:<10}\ttotalRet {1:.5}, stdDevDailyRet {2:.5}, meanDailyRet {3:.5}, sharpeRatio {4:.5}, sortinoRatio {5:.5}".format(f[0], f[1], f[2], f[3], f[4], f[5]))
-		plt.plot(f[6], f[7], label="{fundName},  Return: {totalRet:.2%}, sortino: {sortino:.4}, {trend3}{trend2}{trend1}".format(fundName=f[0], totalRet=f[1], sortino=f[5], trend3=trend3, trend2=trend2, trend1=trend1))
+		plt.plot(f[6], (f[7]-1)*100, label="{fundName},  Return: {totalRet:.2%}, sortino: {sortino:.4}, {trend3}{trend2}{trend1}".format(fundName=f[0], totalRet=f[1], sortino=f[5], trend3=trend3, trend2=trend2, trend1=trend1))
 
 	plt.legend(loc='best')
 	plt.grid(True)
@@ -122,13 +125,16 @@ if __name__ == "__main__":
 
 
 # ==== ING Part ====
+	
+	# plt.subplot(1,2,2)
 
+	# for f in ScatterIndicators:
+	# 	plt.scatter(f[2], f[1], color='blue', label=f[0])
 
-	plt.legend(loc='best')
-	plt.grid(True)
-	plt.title('Aegon')
-	plt.xlabel('dni')
-	plt.ylabel('zysk %')
+	# plt.grid(True)
+	# plt.title('Funds')
+	# plt.xlabel('Risk')
+	# plt.ylabel('Return')
 
 
 	figureManager = plt.get_current_fig_manager()
